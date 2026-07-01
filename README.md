@@ -6,7 +6,7 @@ Multi-tenant enterprise subscription & billing management backend.
 
 ## Architecture
 
-![BillingNexus Architecture](Architecture.png)
+![BillingNexus Architecture](billingnexus-architecture.png)
 
 ## Tech Stack
 - Java 21, Spring Boot 3.5
