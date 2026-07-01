@@ -42,7 +42,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // login/register — no token required
+                        .requestMatchers("/", "/api/auth/**").permitAll() // login/register — no token required
                         .anyRequest().authenticated()                 // everything else needs a valid JWT
                 )
 
