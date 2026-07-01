@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        The travel agency.
+        Manages all Spring library versions for you — including
+        Flyway's version, already tested and matched to this
+        Spring Boot release. We do NOT override flyway.version.
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.16</version>
+        <relativePath/>
+    </parent>
+
+    <!--
+        Your passport — who this project is.
+    -->
+    <groupId>com.billingnexus</groupId>
+    <artifactId>billingnexus</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>BillingNexus</name>
+    <description>Multi-tenant enterprise subscription and billing management backend</description>
+
+    <!--
+        IMPORTANT — Maven POM element ordering is strict.
+        properties must appear here, AFTER description,
+        BEFORE dependencies. This is what caused the earlier
+        XML validation error.
+    -->
+    <properties>
+        <java.version>21</java.version>
+        <!--
+            jjwt is NOT managed by the Spring Boot parent POM,
+            so we pin its version ourselves. All 3 jjwt jars
+            below reference this property to stay in sync.
+        -->
+        <jjwt.version>0.13.0</jjwt.version>
+    <kotlin.version>2.3.10</kotlin.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- ══════════════════════════════════════════
+             WEB
+             Tomcat (embedded) + Spring MVC + Jackson.
+             Without this you have no HTTP server.
+        ══════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════
+             SECURITY
+             Spring Security core, filters, @PreAuthorize,
+             SecurityContext, BCrypt password encoding.
+        ══════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════
+             DATA JPA
+             Hibernate ORM, Spring Data repositories,
+             @Entity, @Transactional, EntityManager.
+        ══════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════
+             POSTGRESQL DRIVER
+             scope=runtime — never imported directly in code.
+             Hibernate talks to it at runtime only.
+        ══════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════
+             FLYWAY — core engine + PostgreSQL module.
+             Version is NOT pinned — fully managed by the
+             Spring Boot 3.5.16 parent POM, tested and
+             guaranteed compatible together.
+        ══════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════
+             JWT — 3 jars, each with a different role
+
+             jjwt-api    : interfaces you code against.
+                           On compile classpath.
+
+             jjwt-impl   : the actual JWT engine.
+                           scope=runtime — never on compile
+                           classpath. Forces coding to the
+                           interface, not the implementation.
+
+             jjwt-jackson: parses JWT claims as JSON via
+                           Jackson. scope=runtime.
+        ══════════════════════════════════════════ -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════
+             VALIDATION
+             @Valid, @NotNull, @NotBlank, @Size on DTOs.
+        ══════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════
+             AOP
+             Required for TenantAwareAspect. Without this,
+             @Aspect is silently ignored and multi-tenancy
+             breaks with no error message.
+        ══════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════
+             LOMBOK
+             Compile-time annotation processor.
+             optional=true : not inherited by dependent projects.
+             Excluded from fat JAR in the plugin below.
+        ══════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════
+             TESTING — scope=test (travel insurance).
+             Never shipped in the production JAR.
+        ══════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                The vehicle — packages everything into one
+                executable fat JAR. Lombok excluded since it
+                was only needed at compile time.
+            -->
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jvmTarget>1.8</jvmTarget>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>testCompile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
